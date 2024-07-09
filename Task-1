@@ -1,0 +1,75 @@
+//CODE AND TESTBENCHES
+
+
+
+module traffic_light (
+    input clk,
+    input reset,
+    output reg [1:0] state // 2-bit state output: 00 - Green, 01 - Yellow, 10 - Red
+);
+
+    // State encoding
+    parameter GREEN = 2'b00, YELLOW = 2'b01, RED = 2'b10;
+    reg [1:0] next_state;
+
+    // State transition logic
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            state <= GREEN; // Reset to GREEN state
+        else
+            state <= next_state;
+    end
+
+    // Next state logic
+    always @(*) begin
+        case (state)
+            GREEN: next_state = YELLOW;
+            YELLOW: next_state = RED;
+            RED: next_state = GREEN;
+            default: next_state = GREEN;
+        endcase
+    end
+endmodule
+
+
+
+
+
+
+module tb_traffic_light;
+
+    // Testbench signals
+    reg clk;
+    reg reset;
+    wire [1:0] state;
+
+    // Instantiate the traffic_light module
+    traffic_light uut (
+        .clk(clk),
+        .reset(reset),
+        .state(state)
+    );
+
+    // Clock generation
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk; // 10 time units clock period
+    end
+
+    // Test sequence
+    initial begin
+        // Initialize reset
+        reset = 1;
+        #10; // Wait for 10 time units
+        reset = 0;
+
+        // Monitor the state transitions
+        $monitor("Time: %0d, State: %b", $time, state);
+
+        // Wait for a few clock cycles
+        #100;
+
+        // End the simulation
+        $finish;
+    end
+endmodule
